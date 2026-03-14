@@ -23,26 +23,35 @@ npm install ncazad/fca-azadx69x
 
 ## ⚙️ Usage
 
-### Basic Bot Example
+### Basic Example
 
 ```javascript
-const login = require("fca-azadx69x");
+const login = require("fb-chat-api-temp");
+const readline = require("readline");
 
-// Load appState exported from Facebook account login
-const appState = require("./appstate.json");
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-login({ appState: appState }, (err, api) => {
-    if (err) return console.error(err);
-
-    // Listen to incoming messages
-    api.listenMqtt((err, event) => {
-        if (err) return console.error(err);
-
-        // Simple ping-pong example
-        if (event.body === "ping") {
-            api.sendMessage("pong", event.threadID);
+const obj = {email: "FB_EMAIL", password: "FB_PASSWORD"};
+login(obj, (err, api) => {
+    if(err) {
+        switch (err.error) {
+            case 'login-approval':
+                console.log('Enter code > ');
+                rl.on('line', (line) => {
+                    err.continue(line);
+                    rl.close();
+                });
+                break;
+            default:
+                console.error(err);
         }
-    });
+        return;
+    }
+
+    // Logged in!
 });
 ```
 
