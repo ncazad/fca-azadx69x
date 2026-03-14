@@ -1,13 +1,4 @@
-I'll create a professional README.md for your `fca-azadx69x` package with the changelog information you provided. Here's the complete file:
-
-```markdown
 # fca-azadx69x
-
-[![npm version](https://img.shields.io/npm/v/fca-azadx69x.svg)](https://www.npmjs.com/package/fca-azadx69x)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen.svg)](https://nodejs.org/)
-[![License](https://img.shields.io/npm/l/fca-azadx69x.svg)](LICENSE)
-
-> Modern Facebook Chat API wrapper with updated dependencies and Node.js 18+ support.
 
 ## 📦 Package Information
 
@@ -24,24 +15,6 @@ I'll create a professional README.md for your `fca-azadx69x` package with the ch
 ```bash
 npm install fca-azadx69x
 ```
-
-📝 Requirements
-
-- Node.js: >= 18.x (LTS recommended)
-
-🔄 Changelog (v2.0.0)
-
-Breaking Changes & Updates
-
-Change	Before	After	
-Node Version	=10.x	=18.x	
-HTTP Client	request v2.53.0 (deprecated)	axios v1.6.2 (modern)	
-MQTT	v3.0.0	v5.3.3	
-HTTPS Proxy Agent	v4.0.0	v7.0.2	
-WebSocket	websocket-stream v5.5.0	ws v8.14.2 (native WebSocket)	
-Logging	npmlog v1.2.0	npmlog v7.0.1	
-Scripts	Basic	Added `lint:fix`, `start`	
-
 🛠️ Available Scripts
 
 ```bash
@@ -94,5 +67,3 @@ This project is licensed under the MIT License.
 ---
 
 Maintained by [Azadx69x](https://github.com/azadx69x)
-
-```
