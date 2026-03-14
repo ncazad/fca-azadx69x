@@ -1,0 +1,42 @@
+{
+  "name": "fca-azadx69x",
+  "version": "2.0.0",
+  "description": "Facebook Chat API by Azadx69x",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "./node_modules/.bin/eslint **.js",
+    "prettier": "prettier utils.js src/* --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncazad/fca-azadx69x.git"
+  },
+  "keywords": [
+    "facebook",
+    "chat",
+    "api",
+    "fca",
+    "fca-azadx69x"
+  ],
+  "bugs": {
+    "url": "https://github.com/ncazad/fca-azadx69x/issues"
+  },
+  "author": "Azadx69x",
+  "license": "MIT",
+  "dependencies": {
+    "https-proxy-agent": "^4.0.0",
+    "mqtt": "^3.0.0",
+    "npmlog": "^1.2.0",
+    "request": "^2.53.0",
+    "websocket-stream": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=10.x"
+  },
+  "devDependencies": {
+    "eslint": "^7.5.0",
+    "mocha": "^7.0.1",
+    "prettier": "^1.11.1"
+  }
+}
