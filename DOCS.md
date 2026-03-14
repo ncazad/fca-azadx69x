@@ -21,24 +21,6 @@ npm install ncazad/fca-azadx69x
 
 ---
 
-## 🗂 Folder Structure
-
-fca-azadx69x/
-├ package.json
-├ index.js
-├ LICENSE
-├ DOCS.md
-├ utils.js
-└ src/
-   ├ login.js
-   ├ listenMqtt.js
-   ├ sendMessage.js
-   ├ getThreadInfo.js
-   ├ getUserInfo.js
-   └ unsendMessage.js
-
----
-
 ## ⚙️ Usage
 
 ### Basic Bot Example
