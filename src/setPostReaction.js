@@ -1,6 +1,5 @@
 /**
- * @fix by NTKhang
- * update as Thursday, 10 February 2022
+ * fixed by @Azadx69x 
  * do not remove the author name to get more updates
  */
 
