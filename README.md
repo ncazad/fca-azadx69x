@@ -126,12 +126,12 @@ BREAKING CHANGES:
 
 📄 LICENSE
 
-    MIT License © 2024 Azadx69x
+    MIT License © 2026 Azadx69x
 
 
     Made with ❤️ by Azadx69x
     ─────────────────────────────────────
     📦 NPM:  npmjs.com/package/fca-azadx69x
-    💻 GitHub:  github.com/Azadx69x/fca-azadx69x
-    🐛 Issues:  github.com/Azadx69x/fca-azadx69x/issues
+    💻 GitHub:  github.com/ncazad/fca-azadx69x
+    🐛 Issues:  github.com/ncazad/fca-azadx69x/issues
 
