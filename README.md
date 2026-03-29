@@ -1,7 +1,7 @@
 
-            📘 fca-azadx69x                               
-    🔥 Advanced Facebook Chat API for Node.js                ║
-            Fast • Reliable •
+                   📘 fca-azadx69x                               
+        🔥 Advanced Facebook Chat API for Node.js                
+                   Fast • Reliable •
 
 [📦 NPM Version: 3.0.0]  [⬇️ Downloads: 100+]  [📄 License: MIT]
 
