@@ -1,6 +1,6 @@
 {
   "name": "X69X_BOT",
-  "version": "3.0.1",
+  "version": "3.0.0",
   "description": "A simple Bot chat messenger using personal account. Made by NTKhang.",
   "main": "index.js",
   "engines": {
