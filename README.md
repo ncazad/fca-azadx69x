@@ -1,69 +1,159 @@
-# fca-azadx69x
+╔══════════════════════════════════════════════════════════════════╗
+║                    📘 fca-azadx69x                               ║
+║         🔥 Advanced Facebook Chat API for Node.js                ║
+║              Fast • Reliable • Developer Friendly                ║
+╚══════════════════════════════════════════════════════════════════╝
 
-## 📦 Package Information
+[📦 NPM Version: 3.0.0]  [⬇️ Downloads: 100+]  [📄 License: MIT]
 
-| Property | Value |
-|----------|-------|
-| Package | fca-azadx69x |
-| Version | 2.0.0 |
-| Main Entry | index.js |
-| Node Requirement | >= 18.x |
-| Author| @Azadx69x |
+════════════════════════════════════════════════════════════════════
 
-## 🚀 Installation
+✨ FEATURES
+════════════════════════════════════════════════════════════════════
 
-```bash
-npm install fca-azadx69x
-```
-🛠️ Available Scripts
+  ⚡ Lightning Fast    →  Axios-powered HTTP requests
+  🔒 Secure            →  Built-in encryption & session management
+  📡 WebSocket         →  Native ws implementation
+  🛠️ Easy Setup        →  Zero-config with smart defaults
+  📱 MQTT Support      →  Real-time message listening
+  🎯 TypeScript Ready  →  Full type definitions
 
-```bash
-npm start          # Start the application
-npm run lint:fix   # Fix linting issues
-```
+════════════════════════════════════════════════════════════════════
 
-💡 Usage
+🚀 QUICK START
+════════════════════════════════════════════════════════════════════
 
-```javascript
-const login = require('fca-azadx69x');
+>> INSTALLATION
 
-login({email: 'your_email', password: 'your_password'}, (err, api) => {
-    if(err) return console.error(err);
-    
-    api.listenMqtt((err, message) => {
-        if(message && message.body) {
-            console.log('Received:', message.body);
-        }
+    npm install fca-azadx69x
+
+
+>> BASIC USAGE
+
+    const login = require('fca-azadx69x');
+
+    login({ 
+        email: 'your_email@example.com', 
+        password: 'your_password' 
+    }, (err, api) => {
+        if (err) return console.error('❌ Login failed:', err);
+        
+        console.log('✅ Logged in successfully!');
+        
+        api.listenMqtt((err, message) => {
+            if (message && message.body) {
+                console.log(`📩 New message: ${message.body}`);
+            }
+        });
     });
-});
-```
 
-⚠️ Migration Guide
+════════════════════════════════════════════════════════════════════
 
-From v1.x to v2.0.0
+📚 API REFERENCE
+════════════════════════════════════════════════════════════════════
 
-1. Node.js Upgrade: Ensure you're running Node.js 18 or higher
-   
-```bash
-   node --version  # Should be v18.x.x or higher
-   ```
+>> login(credentials, callback)
 
-2. Dependency Updates: All internal HTTP requests now use `axios` instead of `request`. If you were extending the library, update your HTTP calls accordingly.
+    ┌─────────────┬──────────┬──────────┬─────────────────────┐
+    │ Parameter   │ Type     │ Required │ Description         │
+    ├─────────────┼──────────┼──────────┼─────────────────────┤
+    │ email       │ string   │    ✓     │ Facebook email      │
+    │ password    │ string   │    ✓     │ Facebook password   │
+    │ callback    │ function │    ✓     │ (err, api) => {}    │
+    └─────────────┴──────────┴──────────┴─────────────────────┘
 
-3. WebSocket Changes: `websocket-stream` has been replaced with native `ws`. Connection handling remains similar but more stable.
 
-🤝 Contributing
+>> api.listenMqtt(callback)
 
-Contributions are welcome! Please ensure your code follows the linting standards:
+    Listen for incoming messages in real-time.
 
-```bash
-npm run lint:fix
-```
+    api.listenMqtt((err, message) => {
+        if (err) return console.error(err);
+        
+        console.log({
+            threadID: message.threadID,
+            senderID: message.senderID,
+            body: message.body,
+            attachments: message.attachments
+        });
+    });
 
-📄 License
+════════════════════════════════════════════════════════════════════
 
-This project is licensed under the MIT License.
+🔄 MIGRATION GUIDE (v2 → v3)
+════════════════════════════════════════════════════════════════════
 
----
+BREAKING CHANGES:
 
-Maintained by [Azadx69x](https://github.com/azadx69x)
+    - const request = require('request');
+    + const axios = require('axios');
+
+    - api.listen((err, msg) => { ... });
+    + api.listenMqtt((err, msg) => { ... });
+
+
+    ┌─────────────────────┬───────────────────┐
+    │ Old                 │ New               │
+    ├─────────────────────┼───────────────────┤
+    │ request library     │ axios             │
+    │ websocket-stream    │ native ws         │
+    │ api.listen()        │ api.listenMqtt()  │
+    └─────────────────────┴───────────────────┘
+
+════════════════════════════════════════════════════════════════════
+
+🛠️ DEVELOPMENT SCRIPTS
+════════════════════════════════════════════════════════════════════
+
+    npm start          →  Start application
+    npm run lint:fix   →  Fix linting issues
+    npm test           →  Run tests
+    npm run build      →  Build for production
+
+════════════════════════════════════════════════════════════════════
+
+🌟 EXAMPLE PROJECT
+════════════════════════════════════════════════════════════════════
+
+>> 🤖 Simple Echo Bot
+
+    const login = require('fca-azadx69x');
+
+    login(credentials, (err, api) => {
+        api.listenMqtt((err, message) => {
+            if (message.body === '/ping') {
+                api.sendMessage('🏓 Pong!', message.threadID);
+            }
+        });
+    });
+
+════════════════════════════════════════════════════════════════════
+
+🤝 CONTRIBUTING
+════════════════════════════════════════════════════════════════════
+
+    1. 🍴 Fork the repository
+    2. 🌿 Create branch: git checkout -b feature/amazing
+    3. 💾 Commit: git commit -m 'Add amazing feature'
+    4. 📤 Push: git push origin feature/amazing
+    5. 🔃 Open Pull Request
+
+    >> Before submitting, run:
+       npm run lint:fix
+
+════════════════════════════════════════════════════════════════════
+
+📄 LICENSE
+════════════════════════════════════════════════════════════════════
+
+    MIT License © 2024 Azadx69x
+
+════════════════════════════════════════════════════════════════════
+
+    Made with ❤️ by Azadx69x
+    ─────────────────────────────────────
+    📦 NPM:  npmjs.com/package/fca-azadx69x
+    💻 GitHub:  github.com/Azadx69x/fca-azadx69x
+    🐛 Issues:  github.com/Azadx69x/fca-azadx69x/issues
+
+════════════════════════════════════════════════════════════════════
