@@ -1,15 +1,12 @@
-╔══════════════════════════════════════════════════════════════════╗
-║                    📘 fca-azadx69x                               ║
-║         🔥 Advanced Facebook Chat API for Node.js                ║
-║              Fast • Reliable • Developer Friendly                ║
-╚══════════════════════════════════════════════════════════════════╝
+
+            📘 fca-azadx69x                               
+    🔥 Advanced Facebook Chat API for Node.js                ║
+            Fast • Reliable •
 
 [📦 NPM Version: 3.0.0]  [⬇️ Downloads: 100+]  [📄 License: MIT]
 
-════════════════════════════════════════════════════════════════════
 
 ✨ FEATURES
-════════════════════════════════════════════════════════════════════
 
   ⚡ Lightning Fast    →  Axios-powered HTTP requests
   🔒 Secure            →  Built-in encryption & session management
@@ -18,10 +15,8 @@
   📱 MQTT Support      →  Real-time message listening
   🎯 TypeScript Ready  →  Full type definitions
 
-════════════════════════════════════════════════════════════════════
 
 🚀 QUICK START
-════════════════════════════════════════════════════════════════════
 
 >> INSTALLATION
 
@@ -47,10 +42,8 @@
         });
     });
 
-════════════════════════════════════════════════════════════════════
 
 📚 API REFERENCE
-════════════════════════════════════════════════════════════════════
 
 >> login(credentials, callback)
 
@@ -78,10 +71,7 @@
         });
     });
 
-════════════════════════════════════════════════════════════════════
 
-🔄 MIGRATION GUIDE (v2 → v3)
-════════════════════════════════════════════════════════════════════
 
 BREAKING CHANGES:
 
@@ -100,20 +90,14 @@ BREAKING CHANGES:
     │ api.listen()        │ api.listenMqtt()  │
     └─────────────────────┴───────────────────┘
 
-════════════════════════════════════════════════════════════════════
 
 🛠️ DEVELOPMENT SCRIPTS
-════════════════════════════════════════════════════════════════════
 
     npm start          →  Start application
     npm run lint:fix   →  Fix linting issues
     npm test           →  Run tests
     npm run build      →  Build for production
 
-════════════════════════════════════════════════════════════════════
-
-🌟 EXAMPLE PROJECT
-════════════════════════════════════════════════════════════════════
 
 >> 🤖 Simple Echo Bot
 
@@ -121,16 +105,14 @@ BREAKING CHANGES:
 
     login(credentials, (err, api) => {
         api.listenMqtt((err, message) => {
-            if (message.body === '/ping') {
-                api.sendMessage('🏓 Pong!', message.threadID);
+            if (message.body === '/sesg') {
+                api.sendMessage('💋 segs!', message.threadID);
             }
         });
     });
 
-════════════════════════════════════════════════════════════════════
 
 🤝 CONTRIBUTING
-════════════════════════════════════════════════════════════════════
 
     1. 🍴 Fork the repository
     2. 🌿 Create branch: git checkout -b feature/amazing
@@ -141,14 +123,11 @@ BREAKING CHANGES:
     >> Before submitting, run:
        npm run lint:fix
 
-════════════════════════════════════════════════════════════════════
 
 📄 LICENSE
-════════════════════════════════════════════════════════════════════
 
     MIT License © 2024 Azadx69x
 
-════════════════════════════════════════════════════════════════════
 
     Made with ❤️ by Azadx69x
     ─────────────────────────────────────
@@ -156,4 +135,3 @@ BREAKING CHANGES:
     💻 GitHub:  github.com/Azadx69x/fca-azadx69x
     🐛 Issues:  github.com/Azadx69x/fca-azadx69x/issues
 
-════════════════════════════════════════════════════════════════════
