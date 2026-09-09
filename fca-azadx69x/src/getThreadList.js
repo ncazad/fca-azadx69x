@@ -1,7 +1,12 @@
 "use strict";
 
-const utils = require("../utils");
+const utils = require('../utils');
 
+/**
+ * Formats an event reminder object from a GraphQL response.
+ * @param {Object} reminder The raw event reminder object.
+ * @returns {Object} A formatted event reminder object.
+ */
 function formatEventReminders(reminder) {
   return {
     reminderID: reminder.id,
@@ -9,7 +14,6 @@ function formatEventReminders(reminder) {
     time: reminder.time,
     eventType: reminder.lightweight_event_type.toLowerCase(),
     locationName: reminder.location_name,
-    // @TODO verify this
     locationCoordinates: reminder.location_coordinates,
     locationPage: reminder.location_page,
     eventStatus: reminder.lightweight_event_status.toLowerCase(),
@@ -29,48 +33,59 @@ function formatEventReminders(reminder) {
   };
 }
 
+/**
+ * Formats a thread object from a GraphQL response.
+ * @param {Object} messageThread The raw message_thread object from GraphQL.
+ * @returns {Object | null} A formatted thread object or null if data is invalid.
+ */
 function formatThreadGraphQLResponse(messageThread) {
+  if (!messageThread || !messageThread.thread_key) return null;
+
   const threadID = messageThread.thread_key.thread_fbid
     ? messageThread.thread_key.thread_fbid
     : messageThread.thread_key.other_user_id;
 
-  // Remove me
   const lastM = messageThread.last_message;
   const snippetID =
-    lastM &&
-    lastM.nodes &&
-    lastM.nodes[0] &&
-    lastM.nodes[0].message_sender &&
-    lastM.nodes[0].message_sender.messaging_actor
-      ? lastM.nodes[0].message_sender.messaging_actor.id
-      : null;
-  const snippetText =
-    lastM && lastM.nodes && lastM.nodes[0] ? lastM.nodes[0].snippet : null;
+    lastM?.nodes?.[0]?.message_sender?.messaging_actor?.id || null;
+  const snippetText = lastM?.nodes?.[0]?.snippet || null;
   const lastR = messageThread.last_read_receipt;
-  const lastReadTimestamp =
-    lastR && lastR.nodes && lastR.nodes[0] && lastR.nodes[0].timestamp_precise
-      ? lastR.nodes[0].timestamp_precise
-      : null;
+  const lastReadTimestamp = lastR?.nodes?.[0]?.timestamp_precise || null;
+
+  // Guard: all_participants or edges can be absent on restricted/deleted threads
+  const edges = (messageThread.all_participants && Array.isArray(messageThread.all_participants.edges))
+    ? messageThread.all_participants.edges
+    : [];
 
   return {
     threadID: threadID,
     threadName: messageThread.name,
-    participantIDs: messageThread.all_participants.edges.map(
+    participantIDs: edges.map(
       (d) => d.node.messaging_actor.id,
     ),
-    userInfo: messageThread.all_participants.edges.map((d) => ({
-      id: d.node.messaging_actor.id,
-      name: d.node.messaging_actor.name,
-      firstName: d.node.messaging_actor.short_name,
-      vanity: d.node.messaging_actor.username,
-      url: d.node.messaging_actor.url,
-      thumbSrc: d.node.messaging_actor.big_image_src.uri,
-      profileUrl: d.node.messaging_actor.big_image_src.uri,
-      gender: d.node.messaging_actor.gender,
-      type: d.node.messaging_actor.__typename,
-      isFriend: d.node.messaging_actor.is_viewer_friend,
-      isBirthday: !!d.node.messaging_actor.is_birthday, //not sure?
-    })),
+    userInfo: edges.map((d) => {
+      const p = d.node.messaging_actor;
+      return {
+        id: p.id,
+        name: p.name,
+        firstName: p.short_name,
+        vanity: p.username,
+        url: p.url,
+        thumbSrc: p.big_image_src?.uri,
+        profileUrl: p.big_image_src?.uri,
+        gender: p.gender,
+        type: p.__typename,
+        isFriend: p.is_viewer_friend,
+        isBirthday: !!p.is_birthday,
+        isEmployee: p.is_employee,
+        isMessengerUser: p.is_messenger_user,
+        isVerified: p.is_verified,
+        isMessageBlockedByViewer: p.is_message_blocked_by_viewer,
+        isViewerCoworker: p.is_viewer_coworker,
+        acceptsMessengerUserFeedback: p.accepts_messenger_user_feedback,
+        isMessengerPlatformBot: p.is_messenger_platform_bot,
+      };
+    }),
     unreadCount: messageThread.unread_count,
     messageCount: messageThread.messages_count,
     timestamp: messageThread.updated_time_precise,
@@ -86,39 +101,41 @@ function formatThreadGraphQLResponse(messageThread) {
     emoji: messageThread.customization_info
       ? messageThread.customization_info.emoji
       : null,
-    color:
-      messageThread.customization_info &&
-      messageThread.customization_info.outgoing_bubble_color
-        ? messageThread.customization_info.outgoing_bubble_color.slice(2)
-        : null,
+    color: (function() {
+      const raw = messageThread.customization_info &&
+        messageThread.customization_info.outgoing_bubble_color;
+      if (!raw) return null;
+      const s = String(raw);
+      if (/^[0-9a-fA-F]{8}$/.test(s)) return s.slice(2);
+      if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.slice(1);
+      if (/^#[0-9a-fA-F]{8}$/.test(s)) return s.slice(3);
+      return s;
+    })(),
     threadTheme: messageThread.thread_theme,
+    theme_id: messageThread.thread_theme ? (messageThread.thread_theme.id || null) : null,
     nicknames:
       messageThread.customization_info &&
       messageThread.customization_info.participant_customizations
         ? messageThread.customization_info.participant_customizations.reduce(
-            function (res, val) {
+            (res, val) => {
               if (val.nickname) res[val.participant_id] = val.nickname;
               return res;
             },
             {},
           )
         : {},
-    adminIDs: messageThread.thread_admins,
+    adminIDs: (messageThread.thread_admins || []).map(a => a.id),
     approvalMode: Boolean(messageThread.approval_mode),
-    approvalQueue: messageThread.group_approval_queue.nodes.map((a) => ({
+    approvalQueue: (messageThread.group_approval_queue?.nodes || []).map((a) => ({
       inviterID: a.inviter.id,
       requesterID: a.requester.id,
       timestamp: a.request_timestamp,
-      request_source: a.request_source, // @Undocumented
+      request_source: a.request_source,
     })),
-
-    // @Undocumented
-    reactionsMuteMode: messageThread.reactions_mute_mode.toLowerCase(),
-    mentionsMuteMode: messageThread.mentions_mute_mode.toLowerCase(),
+    reactionsMuteMode: messageThread.reactions_mute_mode?.toLowerCase() || 'all_reactions',
+    mentionsMuteMode: messageThread.mentions_mute_mode?.toLowerCase() || 'all_mentions',
     isPinProtected: messageThread.is_pin_protected,
     relatedPageThread: messageThread.related_page_thread,
-
-    // @Legacy
     name: messageThread.name,
     snippet: snippetText,
     snippetSender: snippetID,
@@ -137,87 +154,46 @@ function formatThreadGraphQLResponse(messageThread) {
     lastMessageType: "message",
     lastReadTimestamp: lastReadTimestamp,
     threadType: messageThread.thread_type == "GROUP" ? 2 : 1,
-
-    // update in Wed, 13 Jul 2022 19:41:12 +0700
     inviteLink: {
-      enable: messageThread.joinable_mode
-        ? messageThread.joinable_mode.mode == 1
-        : false,
-      link: messageThread.joinable_mode
-        ? messageThread.joinable_mode.link
-        : null,
+      enable: messageThread.joinable_mode?.mode == 1,
+      link: messageThread.joinable_mode?.link || null,
     },
   };
 }
 
-function formatThreadList(data) {
-  // console.log(JSON.stringify(data.find(t => t.thread_key.thread_fbid === "5095817367161431"), null, 2));
-  return data.map((t) => formatThreadGraphQLResponse(t));
-}
-
+/**
+ * @param {Object} defaultFuncs
+ * @param {Object} api
+ * @param {Object} ctx
+ * @returns {function(limit: number, timestamp: number | null, tags: string[]): Promise<Array<Object>>}
+ */
 module.exports = function (defaultFuncs, api, ctx) {
-  return function getThreadList(limit, timestamp, tags, callback) {
-    if (
-      !callback &&
-      (utils.getType(tags) === "Function" ||
-        utils.getType(tags) === "AsyncFunction")
-    ) {
-      callback = tags;
-      tags = [""];
+  /**
+   * Retrieves a list of threads.
+   * @param {number} limit - The number of threads to retrieve.
+   * @param {number|null} timestamp - A timestamp to start fetching threads before. Use null for the most recent.
+   * @param {string[]} tags - An array of tags to filter threads by (e.g., ["INBOX", "ARCHIVED"]).
+   * @returns {Promise<Object[]>} A promise that resolves with an array of formatted thread objects.
+   */
+  return async function getThreadList(limit, timestamp = null, tags = ["INBOX"]) {
+    if (utils.getType(limit) !== "Number" || !Number.isInteger(limit) || limit <= 0) {
+      throw new Error("getThreadList: limit must be a positive integer.");
     }
-    if (
-      utils.getType(limit) !== "Number" ||
-      !Number.isInteger(limit) ||
-      limit <= 0
-    ) {
-      throw new utils.CustomError({
-        error: "getThreadList: limit must be a positive integer",
-      });
-    }
-    if (
-      utils.getType(timestamp) !== "Null" &&
-      (utils.getType(timestamp) !== "Number" || !Number.isInteger(timestamp))
-    ) {
-      throw new utils.CustomError({
-        error: "getThreadList: timestamp must be an integer or null",
-      });
+    if (utils.getType(timestamp) !== "Null" && (utils.getType(timestamp) !== "Number" || !Number.isInteger(timestamp))) {
+      throw new Error("getThreadList: timestamp must be an integer or null.");
     }
     if (utils.getType(tags) === "String") {
       tags = [tags];
     }
     if (utils.getType(tags) !== "Array") {
-      throw new utils.CustomError({
-        error: "getThreadList: tags must be an array",
-        message: "getThreadList: tags must be an array",
-      });
-    }
-
-    let resolveFunc = function () {};
-    let rejectFunc = function () {};
-    const returnPromise = new Promise(function (resolve, reject) {
-      resolveFunc = resolve;
-      rejectFunc = reject;
-    });
-
-    if (
-      utils.getType(callback) !== "Function" &&
-      utils.getType(callback) !== "AsyncFunction"
-    ) {
-      callback = function (err, data) {
-        if (err) {
-          return rejectFunc(err);
-        }
-        resolveFunc(data);
-      };
+      throw new Error("getThreadList: tags must be an array.");
     }
 
     const form = {
       av: ctx.i_userID || ctx.userID,
       queries: JSON.stringify({
         o0: {
-          // This doc_id was valid on 2020-07-20
-          // "doc_id": "3336396659757871",
-          doc_id: "3426149104143726",
+          doc_id: "3336396659757871",
           query_params: {
             limit: limit + (timestamp ? 1 : 0),
             before: timestamp,
@@ -230,40 +206,41 @@ module.exports = function (defaultFuncs, api, ctx) {
       batch_name: "MessengerGraphQLThreadlistFetcher",
     };
 
-    defaultFuncs
-      .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
-      .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then((resData) => {
-        if (resData[resData.length - 1].error_results > 0) {
-          throw new utils.CustomError(resData[0].o0.errors);
-        }
+    try {
+      const resData = await defaultFuncs
+        .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
+        .then(utils.parseAndCheckLogin(ctx, defaultFuncs));
 
-        if (resData[resData.length - 1].successful_results === 0) {
-          throw new utils.CustomError({
-            error: "getThreadList: there was no successful_results",
-            res: resData,
-          });
-        }
+      if (!resData || !Array.isArray(resData) || resData.length === 0) {
+        throw new Error("getThreadList: Invalid response from server");
+      }
 
-        // When we ask for threads using timestamp from the previous request,
-        // we are getting the last thread repeated as the first thread in this response.
-        // .shift() gets rid of it
-        // It is also the reason for increasing limit by 1 when timestamp is set
-        // this way user asks for 10 threads, we are asking for 11,
-        // but after removing the duplicated one, it is again 10
-        if (timestamp) {
-          resData[0].o0.data.viewer.message_threads.nodes.shift();
-        }
-        callback(
-          null,
-          formatThreadList(resData[0].o0.data.viewer.message_threads.nodes),
-        );
-      })
-      .catch((err) => {
-        utils.error("getThreadList", err);
-        return callback(err);
-      });
+      const lastResult = resData[resData.length - 1];
+      if (lastResult && lastResult.error_results && lastResult.error_results > 0) {
+        throw new Error(JSON.stringify(resData[0]?.o0?.errors || "Unknown error"));
+      }
 
-    return returnPromise;
+      if (lastResult && lastResult.successful_results === 0) {
+        throw new Error("getThreadList: there was no successful_results");
+      }
+
+      if (!resData[0] || !resData[0].o0 || !resData[0].o0.data) {
+        throw new Error("getThreadList: Invalid data structure in response");
+      }
+
+      const viewer = resData[0].o0.data && resData[0].o0.data.viewer;
+      if (!viewer || !viewer.message_threads) {
+        throw new Error("getThreadList: Facebook returned no message_threads data (session may be invalid)");
+      }
+      let nodes = viewer.message_threads.nodes;
+      if (timestamp) {
+        nodes.shift();
+      }
+
+      return nodes.map(formatThreadGraphQLResponse);
+    } catch (err) {
+      utils.error("getThreadList", err);
+      throw err;
+    }
   };
 };
