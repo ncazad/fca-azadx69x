@@ -1,137 +1,144 @@
+<p align="center">
+  <img src="https://img.shields.io/npm/v/fca-azadx69x?style=flat-square&color=blue" alt="npm version">
+  <img src="https://img.shields.io/npm/dt/fca-azadx69x?style=flat-square&color=green" alt="downloads">
+  <img src="https://img.shields.io/npm/l/fca-azadx69x?style=flat-square&color=orange" alt="license">
+</p>
 
-                             📘 fca-azadx69x                               
-                🔥 Advanced Facebook Chat API for Node.js                
-                             Fast • Reliable •
+<h1 align="center">⚡ fca-azadx69x</h1>
+<p align="center"><b>Advanced Facebook Chat API for Node.js</b><br>Fast • Reliable • Modern</p>
 
-[📦 NPM Version: 3.0.0]  [⬇️ Downloads: 100+]  [📄 License: MIT]
+---
 
+## ✨ Features
 
-✨ FEATURES
+- ⚡ **Lightning Fast** – Axios-powered HTTP requests
+- 🔒 **Secure** – Built‑in encryption & session management
+- 📡 **WebSocket** – Native `ws` implementation
+- 🛠️ **Easy Setup** – Zero‑config with smart defaults
+- 📱 **MQTT Support** – Real‑time message listening
+- 🎯 **TypeScript Ready** – Full type definitions included
 
-  ⚡ Lightning Fast    →  Axios-powered HTTP requests
-  🔒 Secure            →  Built-in encryption & session management
-  📡 WebSocket         →  Native ws implementation
-  🛠️ Easy Setup        →  Zero-config with smart defaults
-  📱 MQTT Support      →  Real-time message listening
-  🎯 TypeScript Ready  →  Full type definitions
+---
 
+## 🚀 Quick Start
 
-🚀 QUICK START
+### Installation
 
->> INSTALLATION
+```bash
+npm install fca-azadx69x
+```
 
-    npm install fca-azadx69x
+Basic Usage
 
+```javascript
+const login = require('fca-azadx69x');
 
->> BASIC USAGE
-
-    const login = require('fca-azadx69x');
-
-    login({ 
-        email: 'your_email@example.com', 
-        password: 'your_password' 
-    }, (err, api) => {
-        if (err) return console.error('❌ Login failed:', err);
-        
-        console.log('✅ Logged in successfully!');
-        
-        api.listenMqtt((err, message) => {
-            if (message && message.body) {
-                console.log(`📩 New message: ${message.body}`);
-            }
-        });
-    });
-
-
-📚 API REFERENCE
-
->> login(credentials, callback)
-
-    ┌─────────────┬──────────┬──────────┬─────────────────────┐
-    │ Parameter   │ Type     │ Required │ Description         │
-    ├─────────────┼──────────┼──────────┼─────────────────────┤
-    │ email       │ string   │    ✓     │ Facebook email      │
-    │ password    │ string   │    ✓     │ Facebook password   │
-    │ callback    │ function │    ✓     │ (err, api) => {}    │
-    └─────────────┴──────────┴──────────┴─────────────────────┘
-
-
->> api.listenMqtt(callback)
-
-    Listen for incoming messages in real-time.
+login(
+  {
+    email: 'your_email@example.com',
+    password: 'your_password'
+  },
+  (err, api) => {
+    if (err) return console.error('❌ Login failed:', err);
+    console.log('✅ Logged in successfully!');
 
     api.listenMqtt((err, message) => {
-        if (err) return console.error(err);
-        
-        console.log({
-            threadID: message.threadID,
-            senderID: message.senderID,
-            body: message.body,
-            attachments: message.attachments
-        });
+      if (message && message.body) {
+        console.log(`📩 New message: ${message.body}`);
+      }
     });
+  }
+);
+```
 
+---
 
+📚 API Reference
 
-BREAKING CHANGES:
+login(credentials, callback)
 
-    - const request = require('request');
-    + const axios = require('axios');
+Parameter Type Required Description
+email string ✓ Facebook email or phone
+password string ✓ Facebook account password
+callback function ✓ (err, api) => {}
 
-    - api.listen((err, msg) => { ... });
-    + api.listenMqtt((err, msg) => { ... });
+api.listenMqtt(callback)
 
+Listens for incoming messages in real‑time.
 
-    ┌─────────────────────┬───────────────────┐
-    │ Old                 │ New               │
-    ├─────────────────────┼───────────────────┤
-    │ request library     │ axios             │
-    │ websocket-stream    │ native ws         │
-    │ api.listen()        │ api.listenMqtt()  │
-    └─────────────────────┴───────────────────┘
+```javascript
+api.listenMqtt((err, message) => {
+  if (err) return console.error(err);
+  console.log({
+    threadID: message.threadID,
+    senderID: message.senderID,
+    body: message.body,
+    attachments: message.attachments
+  });
+});
+```
 
+---
 
-🛠️ DEVELOPMENT SCRIPTS
+⚠️ Breaking Changes
 
-    npm start          →  Start application
-    npm run lint:fix   →  Fix linting issues
-    npm test           →  Run tests
-    npm run build      →  Build for production
+Old New
+const request = require('request'); const axios = require('axios');
+api.listen((err, msg) => { ... }); api.listenMqtt((err, msg) => { ... });
+websocket-stream native ws
+request library axios
 
+---
 
->> 🤖 Simple Echo Bot
+🛠️ Development Scripts
 
-    const login = require('fca-azadx69x');
+Command Description
+npm start Start the application
+npm run lint:fix Fix linting issues
+npm test Run tests
+npm run build Build for production
 
-    login(credentials, (err, api) => {
-        api.listenMqtt((err, message) => {
-            if (message.body === '/sesg') {
-                api.sendMessage('💋 segs!', message.threadID);
-            }
-        });
-    });
+---
 
+🤖 Simple Echo Bot
 
-🤝 CONTRIBUTING
+```javascript
+const login = require('fca-azadx69x');
 
-    1. 🍴 Fork the repository
-    2. 🌿 Create branch: git checkout -b feature/amazing
-    3. 💾 Commit: git commit -m 'Add amazing feature'
-    4. 📤 Push: git push origin feature/amazing
-    5. 🔃 Open Pull Request
+login(credentials, (err, api) => {
+  api.listenMqtt((err, message) => {
+    if (message.body === '/sesg') {
+      api.sendMessage('💋 segs!', message.threadID);
+    }
+  });
+});
+```
 
-    >> Before submitting, run:
-       npm run lint:fix
+---
 
+🤝 Contributing
 
-📄 LICENSE
+We ❤️ contributions! Here’s how you can help:
 
-    MIT License © 2026 Azadx69x
+1. 🍴 Fork the repository
+2. 🌿 Create a branch: git checkout -b feature/amazing
+3. 💾 Commit your changes: git commit -m 'Add amazing feature'
+4. 📤 Push to the branch: git push origin feature/amazing
+5. 🔃 Open a Pull Request
 
+Before submitting, please run:
+npm run lint:fix
 
-    Made with ❤️ by Azadx69x
-    ─────────────────────────────────────
-    📦 NPM:  npmjs.com/package/fca-azadx69x
-    💻 GitHub:  github.com/ncazad/fca-azadx69x
-    🐛 Issues:  github.com/ncazad/fca-azadx69x/issues
+---
 
+📄 License
+
+MIT License © 2026 Azadx69x
+
+---
+
+<p align="center">
+  📦 <a href="https://www.npmjs.com/package/fca-azadx69x">npm</a> &nbsp;·&nbsp;
+  💻 <a href="https://github.com/ncazad/fca-azadx69x">GitHub</a> &nbsp;·&nbsp;
+  🐛 <a href="https://github.com/ncazad/fca-azadx69x/issues">Issues</a>
+</p>
