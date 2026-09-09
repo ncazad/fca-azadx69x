@@ -7,8 +7,9 @@ const echaceb = gradient(["#0061ff", "#681297"]);
 const ws = echaceb("fca-azadx69x");
 
 const requestDelays = new Map();
-const MIN_REQUEST_DELAY = 2000; // Minimum 2 seconds between requests
-const MAX_REQUEST_DELAY = 8000; // Maximum 8 seconds
+const MIN_REQUEST_DELAY = 3000;
+const MAX_REQUEST_DELAY = 15000;
+const DEFAULT_USER_KEY = "global";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -18,70 +19,78 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function throttleRequest(userID = 'default') {
+async function throttleRequest(userID = DEFAULT_USER_KEY) {
   const now = Date.now();
-  const lastRequest = requestDelays.get(userID) || 0;
-  const timeSinceLastRequest = now - lastRequest;
-  const requiredDelay = getRandomInt(MIN_REQUEST_DELAY, MAX_REQUEST_DELAY);
-  
-  if (timeSinceLastRequest < requiredDelay) {
-    const waitTime = requiredDelay - timeSinceLastRequest;
-    await sleep(waitTime);
+  const last = requestDelays.get(userID) || 0;
+  const gap = now - last;
+  const base = getRandomInt(MIN_REQUEST_DELAY, MAX_REQUEST_DELAY);
+  const multiplier = 0.8 + Math.random() * 0.4;
+  const required = Math.floor(base * multiplier);
+  if (gap < required) {
+    await sleep(required - gap);
   }
-  
   requestDelays.set(userID, Date.now());
 }
 
-// ====== FIXED USER AGENTS (Modern & Realistic) ======
-// OLD suspicious agents removed
-const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const windowsUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0";
+const modernUserAgents = [
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
+];
 
 function randomUserAgent() {
-  const modernAgents = [
-    // Chrome 120-122 (Windows)
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    // Chrome (Mac)
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    // Firefox (Windows)
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-    // Edge (Windows)
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0",
-    // Safari (Mac)
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
-  ];
-  
-  return modernAgents[getRandomInt(0, modernAgents.length - 1)];
+  return modernUserAgents[getRandomInt(0, modernUserAgents.length - 1)];
 }
 
-// ====== FIXED HEADERS (More Natural) ======
-const headers = {
-  "content-type": "application/x-www-form-urlencoded",
-  "referer": "https://www.facebook.com/",
-  "origin": "https://www.facebook.com",
-  "connection": "keep-alive",
-  "Sec-Fetch-Site": "same-origin",
-  "Sec-Fetch-User": "?1",
+const baseHeaders = {
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
   "Accept-Encoding": "gzip, deflate, br",
+  "Connection": "keep-alive",
   "Upgrade-Insecure-Requests": "1",
-  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Site": "same-origin",
   "Sec-Fetch-Mode": "navigate",
-  "Cache-Control": "max-age=0"
+  "Sec-Fetch-User": "?1",
+  "Sec-Fetch-Dest": "document",
+  "Cache-Control": "max-age=0",
+  "DNT": "1",
 };
+
+function getHeaders(url, options, ctx, customHeader) {
+  const headers1 = {
+    "host": new URL(url).hostname,
+    "User-Agent": customHeader?.customUserAgent ?? options?.userAgent ?? randomUserAgent(),
+    ...baseHeaders,
+  };
+
+  if (Math.random() > 0.7) delete headers1["Upgrade-Insecure-Requests"];
+  if (Math.random() > 0.8) headers1["Save-Data"] = "on";
+  if (Math.random() > 0.6) delete headers1["DNT"];
+
+  if (customHeader?.noRef || Math.random() > 0.8) {
+    delete headers1.referer;
+  } else {
+    headers1.referer = customHeader?.referer ||
+      (Math.random() > 0.3 ? "https://www.facebook.com/" : "https://www.messenger.com/");
+  }
+
+  if (ctx && ctx.region) headers1["X-MSGR-Region"] = ctx.region;
+  if (customHeader) Object.assign(headers1, customHeader);
+  return headers1;
+}
 
 let request = require("request").defaults({
   jar: true,
-  headers: headers
+  headers: getHeaders("https://www.facebook.com")
 });
 
-// getJar function for creating new cookie jars
 function getJar() {
   return request.jar();
 }
@@ -93,25 +102,10 @@ const url = require("url");
 function setProxy(proxy) {
   request = require("request").defaults({
     jar: true,
-    headers: headers,
+    headers: getHeaders("https://www.facebook.com"),
     ...(proxy && { proxy })
   });
   return;
-}
-
-function getHeaders(url, options, ctx, customHeader) {
-  const headers1 = {
-    "host": new URL(url).hostname,
-    ...headers,
-    "User-Agent": customHeader?.customUserAgent ?? options?.userAgent ?? defaultUserAgent
-  };
-  
-  if (ctx && ctx.region) headers1["X-MSGR-Region"] = ctx.region;
-  if (customHeader) {
-    Object.assign(headers1, customHeader);
-    if (customHeader.noRef) delete headers1.referer;
-  }
-  return headers1;
 }
 
 function isReadableStream(obj) {
@@ -127,19 +121,17 @@ function cleanGet(url) {
   return returnPromise;
 }
 
-// ====== FIXED GET/POST with Throttling ======
-function get(url, jar, qs, options, ctx, customHeader) {
+async function get(url, jar, qs, options, ctx, customHeader) {
+  await throttleRequest(DEFAULT_USER_KEY);
   let callback;
   var returnPromise = new Promise(function (resolve, reject) {
     callback = (error, res) => error ? reject(error) : resolve(res);
   });
-  
-  if (getType(qs) == "Object") 
+  if (getType(qs) == "Object")
     for (let prop in qs) {
       if (getType(qs[prop]) == 'Object')
         qs[prop] = JSON.stringify(qs[prop]);
     }
-        
   var op = {
     headers: getHeaders(url, options, ctx, customHeader),
     timeout: 60000,
@@ -147,17 +139,16 @@ function get(url, jar, qs, options, ctx, customHeader) {
     jar,
     gzip: true
   };
-
   request.get(url, op, callback);
   return returnPromise;
 }
 
-function post(url, jar, form, options, ctx, customHeader) {
+async function post(url, jar, form, options, ctx, customHeader) {
+  await throttleRequest(DEFAULT_USER_KEY);
   let callback;
   var returnPromise = new Promise(function (resolve, reject) {
     callback = (error, res) => error ? reject(error) : resolve(res);
   });
-  
   var op = {
     headers: getHeaders(url, options, ctx, customHeader),
     timeout: 60000,
@@ -165,23 +156,21 @@ function post(url, jar, form, options, ctx, customHeader) {
     jar,
     gzip: true
   };
-
   request.post(url, op, callback);
   return returnPromise;
 }
 
-function postFormData(url, jar, form, qs, options, ctx) {
+async function postFormData(url, jar, form, qs, options, ctx) {
+  await throttleRequest(DEFAULT_USER_KEY);
   let callback;
   var returnPromise = new Promise(function (resolve, reject) {
     callback = (error, res) => error ? reject(error) : resolve(res);
   });
-  
-  if (getType(qs) == "Object") 
+  if (getType(qs) == "Object")
     for (let prop in qs) {
       if (getType(qs[prop]) == 'Object')
         qs[prop] = JSON.stringify(qs[prop]);
     }
-        
   var op = {
     headers: getHeaders(url, options, ctx, {
       'content-type': 'multipart/form-data'
@@ -192,7 +181,6 @@ function postFormData(url, jar, form, qs, options, ctx) {
     jar,
     gzip: true
   };
-
   request.post(url, op, callback);
   return returnPromise;
 }
@@ -293,42 +281,29 @@ function presenceEncode(str) {
     });
 }
 
-// eslint-disable-next-line no-unused-vars
-function presenceDecode(str) {
-  return decodeURIComponent(
-    str.replace(/[_A-Z]/g, function(m) {
-      return j[m];
-    })
-  );
-}
-
-// ====== FIXED PRESENCE (More Human-like) ======
 function generatePresence(userID) {
-  const time = Date.now();
-  // Add small random variation to timestamp (human-like delay)
-  const variation = getRandomInt(-5000, 5000);
-  const adjustedTime = Math.max(0, time + variation);
-  
+  const now = Date.now();
+  const ts = now + getRandomInt(-10000, 10000);
+  const status = getRandomInt(0, 2);
   return (
     "E" +
     presenceEncode(
       JSON.stringify({
         v: 3,
-        time: parseInt(adjustedTime / 1000, 10),
+        time: Math.floor(ts / 1000),
         user: userID,
         state: {
-          ut: 0,
+          ut: status,
           t2: [],
           lm2: null,
-          uct2: adjustedTime,
+          uct2: ts,
           tr: null,
-          // More realistic random values
-          tw: Math.floor(Math.random() * 1000) + 1,
-          at: adjustedTime
+          tw: getRandomInt(100, 2000),
+          at: ts,
         },
         ch: {
-          ["p_" + userID]: 0
-        }
+          ["p_" + userID]: 0,
+        },
       })
     )
   );
@@ -351,17 +326,11 @@ function generateAccessiblityCookie() {
 }
 
 function getGUID() {
-  /** @type {number} */
   let sectionLength = Date.now();
-  /** @type {string} */
   const id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-    /** @type {number} */
     const r = Math.floor((sectionLength + Math.random() * 16) % 16);
-    /** @type {number} */
     sectionLength = Math.floor(sectionLength / 16);
-    /** @type {string} */
-    const _guid = (c == "x" ? r : (r & 7) | 8).toString(16);
-    return _guid;
+    return (c == "x" ? r : (r & 7) | 8).toString(16);
   });
   return id;
 }
@@ -382,12 +351,6 @@ function getExtension(original_extension, fullFileName = "") {
 }
 
 function _formatAttachment(attachment1, attachment2) {
-  // TODO: THIS IS REALLY BAD
-  // This is an attempt at fixing Facebook's inconsistencies. Sometimes they give us
-  // two attachment objects, but sometimes only one. They each contain part of the
-  // data that you'd want so we merge them for convenience.
-  // Instead of having a bunch of if statements guarding every access to image_data,
-  // we set it to empty object and use the fact that it'll return undefined.
   const fullFileName = attachment1.filename;
   const fileSize = Number(attachment1.fileSize || 0);
   const durationVideo = attachment1.genericMetadata ? Number(attachment1.genericMetadata.videoLength) : undefined;
@@ -418,8 +381,6 @@ function _formatAttachment(attachment1, attachment2) {
 
     blob = attachment1.extensible_attachment;
   }
-  // TODO: Determine whether "sticker", "photo", "file" etc are still used
-  // KEEP IN SYNC WITH getThreadHistory
   switch (type) {
     case "sticker":
       return {
@@ -441,9 +402,9 @@ function _formatAttachment(attachment1, attachment2) {
           framesPerRow: attachment1.metadata.framesPerRow,
           framesPerCol: attachment1.metadata.framesPerCol,
 
-          stickerID: attachment1.metadata.stickerID.toString(), // @Legacy
-          spriteURI: attachment1.metadata.spriteURI, // @Legacy
-          spriteURI2x: attachment1.metadata.spriteURI2x // @Legacy
+          stickerID: attachment1.metadata.stickerID.toString(),
+          spriteURI: attachment1.metadata.spriteURI,
+          spriteURI2x: attachment1.metadata.spriteURI2x
       };
     case "file":
       return {
@@ -459,7 +420,7 @@ function _formatAttachment(attachment1, attachment2) {
           isMalicious: attachment2.is_malicious,
           contentType: attachment2.mime_type,
 
-          name: attachment1.name // @Legacy
+          name: attachment1.name
       };
     case "photo":
       return {
@@ -480,10 +441,10 @@ function _formatAttachment(attachment1, attachment2) {
           largePreviewWidth: attachment1.large_preview_width,
           largePreviewHeight: attachment1.large_preview_height,
 
-          url: attachment1.metadata.url, // @Legacy
-          width: attachment1.metadata.dimensions.split(",")[0], // @Legacy
-          height: attachment1.metadata.dimensions.split(",")[1], // @Legacy
-          name: fullFileName // @Legacy
+          url: attachment1.metadata.url,
+          width: attachment1.metadata.dimensions.split(",")[0],
+          height: attachment1.metadata.dimensions.split(",")[1],
+          name: fullFileName
       };
     case "animated_image":
       return {
@@ -502,15 +463,15 @@ function _formatAttachment(attachment1, attachment2) {
           width: attachment2.image_data.width,
           height: attachment2.image_data.height,
 
-          name: attachment1.name, // @Legacy
-          facebookUrl: attachment1.url, // @Legacy
-          thumbnailUrl: attachment1.thumbnail_url, // @Legacy
-          rawGifImage: attachment2.image_data.raw_gif_image, // @Legacy
-          rawWebpImage: attachment2.image_data.raw_webp_image, // @Legacy
-          animatedGifUrl: attachment2.image_data.animated_gif_url, // @Legacy
-          animatedGifPreviewUrl: attachment2.image_data.animated_gif_preview_url, // @Legacy
-          animatedWebpUrl: attachment2.image_data.animated_webp_url, // @Legacy
-          animatedWebpPreviewUrl: attachment2.image_data.animated_webp_preview_url // @Legacy
+          name: attachment1.name,
+          facebookUrl: attachment1.url,
+          thumbnailUrl: attachment1.thumbnail_url,
+          rawGifImage: attachment2.image_data.raw_gif_image,
+          rawWebpImage: attachment2.image_data.raw_webp_image,
+          animatedGifUrl: attachment2.image_data.animated_gif_url,
+          animatedGifPreviewUrl: attachment2.image_data.animated_gif_preview_url,
+          animatedWebpUrl: attachment2.image_data.animated_webp_url,
+          animatedWebpPreviewUrl: attachment2.image_data.animated_webp_preview_url
       };
     case "share":
       return {
@@ -531,10 +492,10 @@ function _formatAttachment(attachment1, attachment2) {
           subattachments: attachment1.share.subattachments,
           properties: {},
 
-          animatedImageSize: attachment1.share.media.animated_image_size, // @Legacy
-          facebookUrl: attachment1.share.uri, // @Legacy
-          target: attachment1.share.target, // @Legacy
-          styleList: attachment1.share.style_list // @Legacy
+          animatedImageSize: attachment1.share.media.animated_image_size,
+          facebookUrl: attachment1.share.uri,
+          target: attachment1.share.target,
+          styleList: attachment1.share.style_list
       };
     case "video":
       return {
@@ -556,14 +517,11 @@ function _formatAttachment(attachment1, attachment2) {
 
           videoType: "unknown",
 
-          thumbnailUrl: attachment1.thumbnail_url // @Legacy
+          thumbnailUrl: attachment1.thumbnail_url
       };
     case "error":
       return {
         type: "error",
-
-          // Save error attachments because we're unsure of their format,
-          // and whether there are cases they contain something useful for debugging.
           attachment1: attachment1,
           attachment2: attachment2
       };
@@ -586,10 +544,10 @@ function _formatAttachment(attachment1, attachment2) {
           largePreviewWidth: blob.large_preview.width,
           largePreviewHeight: blob.large_preview.height,
 
-          url: blob.large_preview.uri, // @Legacy
-          width: blob.original_dimensions.x, // @Legacy
-          height: blob.original_dimensions.y, // @Legacy
-          name: blob.filename // @Legacy
+          url: blob.large_preview.uri,
+          width: blob.original_dimensions.x,
+          height: blob.original_dimensions.y,
+          name: blob.filename
       };
     case "MessageAnimatedImage":
       return {
@@ -608,14 +566,14 @@ function _formatAttachment(attachment1, attachment2) {
           width: blob.animated_image.width,
           height: blob.animated_image.height,
 
-          thumbnailUrl: blob.preview_image.uri, // @Legacy
-          name: blob.filename, // @Legacy
-          facebookUrl: blob.animated_image.uri, // @Legacy
-          rawGifImage: blob.animated_image.uri, // @Legacy
-          animatedGifUrl: blob.animated_image.uri, // @Legacy
-          animatedGifPreviewUrl: blob.preview_image.uri, // @Legacy
-          animatedWebpUrl: blob.animated_image.uri, // @Legacy
-          animatedWebpPreviewUrl: blob.preview_image.uri // @Legacy
+          thumbnailUrl: blob.preview_image.uri,
+          name: blob.filename,
+          facebookUrl: blob.animated_image.uri,
+          rawGifImage: blob.animated_image.uri,
+          animatedGifUrl: blob.animated_image.uri,
+          animatedGifPreviewUrl: blob.preview_image.uri,
+          animatedWebpUrl: blob.animated_image.uri,
+          animatedWebpPreviewUrl: blob.preview_image.uri
       };
     case "MessageVideo":
       return {
@@ -638,7 +596,7 @@ function _formatAttachment(attachment1, attachment2) {
 
           videoType: blob.video_type.toLowerCase(),
 
-          thumbnailUrl: blob.large_image.uri // @Legacy
+          thumbnailUrl: blob.large_image.uri
       };
     case "MessageAudio":
       return {
@@ -677,9 +635,9 @@ function _formatAttachment(attachment1, attachment2) {
           framesPerRow: blob.frames_per_row,
           framesPerCol: blob.frames_per_column,
 
-          stickerID: blob.id, // @Legacy
-          spriteURI: blob.sprite_image, // @Legacy
-          spriteURI2x: blob.sprite_image_2x // @Legacy
+          stickerID: blob.id,
+          spriteURI: blob.sprite_image,
+          spriteURI2x: blob.sprite_image_2x
       };
     case "MessageLocation":
       var urlAttach = blob.story_attachment.url;
@@ -696,7 +654,6 @@ function _formatAttachment(attachment1, attachment2) {
         latitude = Number.parseFloat(address[0]);
         longitude = Number.parseFloat(address[1]);
       } catch (err) {
-        /* empty */
       }
 
       var imageUrl;
@@ -720,9 +677,9 @@ function _formatAttachment(attachment1, attachment2) {
           url: u || urlAttach,
           address: where1,
 
-          facebookUrl: blob.story_attachment.url, // @Legacy
-          target: blob.story_attachment.target, // @Legacy
-          styleList: blob.story_attachment.style_list // @Legacy
+          facebookUrl: blob.story_attachment.url,
+          target: blob.story_attachment.target,
+          styleList: blob.story_attachment.style_list
       };
     case "ExtensibleAttachment":
       return {
@@ -767,9 +724,9 @@ function _formatAttachment(attachment1, attachment2) {
             return obj;
           }, {}),
 
-          facebookUrl: blob.story_attachment.url, // @Legacy
-          target: blob.story_attachment.target, // @Legacy
-          styleList: blob.story_attachment.style_list // @Legacy
+          facebookUrl: blob.story_attachment.url,
+          target: blob.story_attachment.target,
+          styleList: blob.story_attachment.style_list
       };
     case "MessageFile":
       return {
@@ -864,8 +821,6 @@ function getMentionsFromDeltaMessage(delta) {
 
 function formatDeltaMessage(m) {
   const md = m.delta.messageMetadata;
-
-  // Use the new mentions extraction function
   const mentions = getMentionsFromDeltaMessage(m.delta);
 
   return {
@@ -969,7 +924,6 @@ function formatHistoryMessage(m) {
   }
 }
 
-// Get a more readable message type for AdminTextMessages
 function getAdminTextMessageType(type) {
   switch (type) {
     case 'unpin_messages_v2':
@@ -1000,13 +954,6 @@ function getAdminTextMessageType(type) {
 function formatDeltaEvent(m) {
   let logMessageType;
   let logMessageData;
-
-  // log:thread-color => {theme_color}
-  // log:user-nickname => {participant_id, nickname}
-  // log:thread-icon => {thread_icon}
-  // log:thread-name => {name}
-  // log:subscribe => {addedParticipants - [Array]}
-  // log:unsubscribe => {leftParticipantFbId}
 
   switch (m.class) {
     case "AdminTextMessage":
@@ -1061,8 +1008,6 @@ function formatTyp(event) {
     threadID: formatID(
       (event.to || event.thread_fbid || event.from).toString()
     ),
-    // When receiving typ indication from mobile, `from_mobile` isn't set.
-    // If it is, we just use that value.
     fromMobile: event.hasOwnProperty("from_mobile") ? event.from_mobile : true,
     userID: (event.realtime_viewer_fbid || event.from).toString(),
     type: "typ"
@@ -1070,8 +1015,6 @@ function formatTyp(event) {
 }
 
 function formatDeltaReadReceipt(delta) {
-  // otherUserFbId seems to be used as both the readerID and the threadID in a 1-1 chat.
-  // In a group chat actorFbId is used for the reader and threadFbId for the thread.
   return {
     reader: (delta.threadKey.otherUserFbId || delta.actorFbId).toString(),
     time: delta.actionTimestampMs,
@@ -1120,16 +1063,6 @@ function getFrom(str, startToken, endToken) {
 
 function makeParsable(html) {
   const withoutForLoop = html.replace(/for\s*\(\s*;\s*;\s*\)\s*;\s*/, "");
-
-  // (What the fuck FB, why windows style newlines?)
-  // So sometimes FB will send us base multiple objects in the same response.
-  // They're all valid JSON, one after the other, at the top level. We detect
-  // that and make it parse-able by JSON.parse.
-  //       Ben - July 15th 2017
-  //
-  // It turns out that Facebook may insert random number of spaces before
-  // next object begins (issue #616)
-  //       rav_kr - 2018-03-19
   const maybeMultipleObjects = withoutForLoop.split(/\}\r\n *\{/);
   if (maybeMultipleObjects.length === 1) return maybeMultipleObjects;
 
@@ -1199,7 +1132,6 @@ function makeDefaults(html, userID, ctx) {
   };
 }
 
-// ====== FIXED parseAndCheckLogin with better retry logic ======
 function parseAndCheckLogin(ctx, http, retryCount) {
   var delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   var _try = (tryData) => new Promise(function(resolve, reject) {
@@ -1209,9 +1141,9 @@ function parseAndCheckLogin(ctx, http, retryCount) {
       reject(error);
     }
   });
-  
+
   if (retryCount == undefined) retryCount = 0;
-  const MAX_RETRIES = 3; // Reduced from 5 to be less aggressive
+  const MAX_RETRIES = 3;
 
   return function(data) {
     function any() {
@@ -1224,11 +1156,10 @@ function parseAndCheckLogin(ctx, http, retryCount) {
           throw err;
         }
         retryCount++;
-        // Exponential backoff with jitter
         const baseDelay = Math.min(1000 * Math.pow(2, retryCount), 10000);
         const jitter = getRandomInt(0, 1000);
         const retryTime = baseDelay + jitter;
-        
+
         console.warn("parseAndCheckLogin", "Got status code " + data.statusCode + " - " + retryCount + ". attempt to retry in " + retryTime + " milliseconds...");
         const url = data.request.uri.protocol + "//" + data.request.uri.hostname + data.request.uri.pathname;
         if (data.request.headers["content-type"].split(";")[0] === "multipart/form-data") {
@@ -1251,6 +1182,13 @@ function parseAndCheckLogin(ctx, http, retryCount) {
 
       if (data.statusCode === 404) return;
 
+      if (data.statusCode === 401 || data.statusCode === 403) {
+        const err = new Error("Session expired or invalid");
+        err.statusCode = data.statusCode;
+        err.error = "Not logged in.";
+        throw err;
+      }
+
       if (data.statusCode !== 200)
         throw new Error("parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response.");
 
@@ -1265,14 +1203,12 @@ function parseAndCheckLogin(ctx, http, retryCount) {
         throw err;
       }
 
-      // In some cases the response contains only a redirect URL which should be followed
       if (res.redirect && data.request.method === "GET") {
         return http
           .get(res.redirect, ctx.jar)
           .then(parseAndCheckLogin(ctx, http));
       }
 
-      // TODO: handle multiple cookies?
       if (res.jsmods && res.jsmods.require && Array.isArray(res.jsmods.require[0]) && res.jsmods.require[0][0] === "Cookie") {
         res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace("_js_", "");
         const requireCookie = res.jsmods.require[0][3];
@@ -1280,15 +1216,11 @@ function parseAndCheckLogin(ctx, http, retryCount) {
         ctx.jar.setCookie(formatCookie(requireCookie, "messenger"), "https://www.messenger.com");
       }
 
-      // On every request we check if we got a DTSG and we mutate the context so that we use the latest
-      // one for the next requests.
       if (res.jsmods && Array.isArray(res.jsmods.require)) {
         const arr = res.jsmods.require;
         for (const i in arr) {
           if (arr[i][0] === "DTSG" && arr[i][1] === "setToken") {
             ctx.fb_dtsg = arr[i][3][0];
-
-            // Update ttstamp since that depends on fb_dtsg
             ctx.ttstamp = "2";
             for (let j = 0; j < ctx.fb_dtsg.length; j++) {
               ctx.ttstamp += ctx.fb_dtsg.charCodeAt(j);
@@ -1308,9 +1240,7 @@ function parseAndCheckLogin(ctx, http, retryCount) {
   };
 }
 
-// ====== FIXED Cookie Extension (Shorter duration) ======
 function extendCookieExpiry(cookieStr) {
-  // Reduced from 1 year to 30 days - more realistic
   const thirtyDays = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toUTCString();
   if (/expires=/i.test(cookieStr)) {
     return cookieStr.replace(/expires=[^;]+/i, "expires=" + thirtyDays);
@@ -1399,7 +1329,7 @@ function formatThread(data) {
     messageCount: data.message_count,
     imageSrc: data.image_src,
     timestamp: data.timestamp,
-    serverTimestamp: data.server_timestamp, // what is this?
+    serverTimestamp: data.server_timestamp,
     muteUntil: data.mute_until,
     isCanonicalUser: data.is_canonical_user,
     isCanonical: data.is_canonical,
@@ -1445,9 +1375,6 @@ function formatPresence(presence, userID) {
 }
 
 function decodeClientPayload(payload) {
-  /*
-  Special function which Client using to "encode" clients JSON payload
-  */
   return JSON.parse(String.fromCharCode.apply(null, payload));
 }
 
@@ -1471,35 +1398,32 @@ function getAccessFromBusiness(jar, Options) {
   }
 }
 
-// ====== FIXED Logout (Better cleanup) ======
 function logout(jar, ctx, callback) {
   return new Promise(async function(resolve, reject) {
     try {
-      // Add small delay before logout to seem more natural
       await sleep(getRandomInt(500, 2000));
-      
-      // Clear all cookies from facebook and messenger domains
+
       const fbCookies = jar.getCookies("https://www.facebook.com");
       const msCookies = jar.getCookies("https://www.messenger.com");
-      
+
       fbCookies.forEach(function(cookie) {
         jar.setCookie(cookie + "; Expires=Thu, 01 Jan 1970 00:00:00 GMT", "https://www.facebook.com");
       });
-      
+
       msCookies.forEach(function(cookie) {
         jar.setCookie(cookie + "; Expires=Thu, 01 Jan 1970 00:00:00 GMT", "https://www.messenger.com");
       });
 
-      // Clear context if provided
       if (ctx) {
         ctx.fb_dtsg = null;
         ctx.ttstamp = null;
         ctx.jazoest = null;
+        ctx.userID = null;
       }
 
       const result = {
         success: true,
-        message: "Logged out successfully"
+        message: "Logged out successfully (local only)"
       };
 
       if (callback) {
@@ -1519,38 +1443,87 @@ function logout(jar, ctx, callback) {
   });
 }
 
-// Clear all session data
 function clearSession(jar, ctx) {
   if (jar) {
     const fbCookies = jar.getCookies("https://www.facebook.com");
     const msCookies = jar.getCookies("https://www.messenger.com");
-    
+
     fbCookies.forEach(function(cookie) {
       jar.setCookie(cookie + "; Expires=Thu, 01 Jan 1970 00:00:00 GMT", "https://www.facebook.com");
     });
-    
+
     msCookies.forEach(function(cookie) {
       jar.setCookie(cookie + "; Expires=Thu, 01 Jan 1970 00:00:00 GMT", "https://www.messenger.com");
     });
   }
-  
+
   if (ctx) {
     ctx.fb_dtsg = null;
     ctx.ttstamp = null;
     ctx.jazoest = null;
     ctx.userID = null;
   }
-  
+
   return {
     success: true,
     message: "Session cleared"
   };
 }
 
+const KEEPALIVE_INTERVAL_MIN = 120000;
+const KEEPALIVE_INTERVAL_MAX = 300000;
+
+async function keepAlive(ctx, jar) {
+  while (true) {
+    try {
+      const delay = getRandomInt(KEEPALIVE_INTERVAL_MIN, KEEPALIVE_INTERVAL_MAX);
+      await sleep(delay);
+
+      const presence = generatePresence(ctx.userID);
+      const form = {
+        presence: presence,
+        __user: ctx.userID,
+        __a: 1,
+        fb_dtsg: ctx.fb_dtsg,
+      };
+      if (ctx.http) {
+        await ctx.http.post('https://www.facebook.com/ajax/mercury/update_presence.php', jar, form);
+      } else {
+        await post('https://www.facebook.com/ajax/mercury/update_presence.php', jar, form);
+      }
+    } catch (e) {
+      console.warn('Keep-alive failed:', e.message);
+      break;
+    }
+  }
+}
+
+let loginFunction = null;
+
+function setLoginFunction(fn) {
+  loginFunction = fn;
+}
+
+async function withSessionRecovery(apiCall, ...args) {
+  try {
+    return await apiCall(...args);
+  } catch (err) {
+    if (err.statusCode === 401 || err.statusCode === 403 || err.error === "Not logged in.") {
+      if (loginFunction) {
+        console.warn("Session expired – re-logging in...");
+        const { ctx, jar } = await loginFunction();
+        throw new Error("Re-login triggered, but you need to update your global ctx and jar and retry.");
+      } else {
+        throw err;
+      }
+    }
+    throw err;
+  }
+}
+
 const meta = prop => new RegExp(`<meta property="${prop}" content="([^"]*)"`);
 
 module.exports = {
-  //logs
   log(...args) {
     console.log(ws, chalk.green.bold("[LOG]"), ...args);
   },
@@ -1600,11 +1573,10 @@ module.exports = {
   getAdminTextMessageType,
   setProxy,
   getAccessFromBusiness,
-  presenceDecode,
   presenceEncode,
-  headers,
-  defaultUserAgent,
-  windowsUserAgent,
+  headers: baseHeaders,
+  defaultUserAgent: randomUserAgent(),
+  windowsUserAgent: modernUserAgents[1],
   randomUserAgent,
   meta,
   getMentionsFromDeltaMessage,
@@ -1612,5 +1584,8 @@ module.exports = {
   clearSession,
   throttleRequest,
   sleep,
-  getRandomInt
+  getRandomInt,
+  keepAlive,
+  setLoginFunction,
+  withSessionRecovery
 };
